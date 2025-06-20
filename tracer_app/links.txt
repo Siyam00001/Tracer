@@ -1,6 +1,0 @@
-{"uuid": "5960702d-e56e-4cc3-9700-1e775046dfd2", "target_url": "www.facebook.com", "created_at": "2025-06-18T17:49:26.389579"}
-{"uuid": "c5e89b21-a7c0-4301-83f7-49cb75e3c5c9", "target_url": "https://github.com", "created_at": "2025-06-18T17:53:38.142959"}
-{"uuid": "01056246-e381-485c-b510-2d708889662e", "target_url": "http://www.facebook.com", "created_at": "2025-06-18T17:55:34.242990"}
-{"uuid": "e34fe134-21a4-4a85-84b3-e22403f2709c", "target_url": "http://www.facebook.com", "created_at": "2025-06-18T18:00:04.380143"}
-{"uuid": "c2d0ea1a-631d-4aaf-89ea-bcc2466e790d", "target_url": "http://www.facebook.com", "created_at": "2025-06-18T18:19:49.218766"}
-{"uuid": "4b0bae9c-9c85-4faa-b119-b2eb4bc4867a", "target_url": "http://www.facebook.com", "created_at": "2025-06-18T18:21:44.990193"}

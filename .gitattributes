@@ -1,2 +1,19 @@
-# Auto detect text files and perform LF normalization
+# Auto detect text files and set default eol
 * text=auto
+
+# Treat Python files as text
+*.py text
+
+# Treat HTML, CSS, JS as text
+*.html text
+*.css text
+*.js text
+
+# Exclude binary files from diff
+*.png binary
+*.ico binary
+*.gif binary
+*.webp binary
+
+# Ensure UTF-8 encoding
+*.txt text working-tree-encoding=UTF-8
